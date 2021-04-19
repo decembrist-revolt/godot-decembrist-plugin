@@ -1,0 +1,7 @@
+<Project Sdk="Godot.NET.Sdk/3.2.3">
+  <PropertyGroup>
+    <LangVersion>8</LangVersion>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>Decembrist</RootNamespace>
+  </PropertyGroup>
+</Project>
