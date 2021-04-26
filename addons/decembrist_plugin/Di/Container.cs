@@ -7,43 +7,78 @@ using Decembrist.Service;
 
 namespace Decembrist.Di
 {
+    /// <summary>
+    /// Dependency resolver class
+    /// </summary>
     public class Container
     {
-        private readonly Dictionary<Type, object> _instanceMap;
+        public delegate object InstanceProducer();
 
-        public Container(Dictionary<Type, object> instanceMap, Dictionary<Type, Type> typeMap)
+        private readonly Dictionary<Type, object> _instanceMap = new();
+        
+        /// <param name="instanceMap">Resolved instances</param>
+        /// <param name="typeMap">Unresolved dependencies</param>
+        internal Container(Dictionary<Type, Dependency> instanceMap, Dictionary<Type, Dependency> typeMap)
         {
-            _instanceMap = instanceMap;
+            foreach (var (type, dependency) in instanceMap)
+            {
+                _instanceMap[type] = dependency.Instance!;
+            }
+
             InstantiateTypes(typeMap);
         }
 
+        /// <summary>
+        /// Resolves dependency instance by type
+        /// </summary>
+        /// <param name="type">dependency type</param>
+        /// <returns>instance or null</returns>
         public object? ResolveOrNull(Type type)
         {
-            return _instanceMap.ContainsKey(type) ? _instanceMap[type] : null;
+            var instance = _instanceMap.ContainsKey(type) ? _instanceMap[type] : null;
+            object? result;
+            if (instance is InstanceProducer instanceProducer)
+            {
+                result = instanceProducer();
+            }
+            else
+            {
+                result = instance;
+            }
+
+            return result;
         }
 
-        private void InstantiateTypes(Dictionary<Type, Type> typeMap)
+        /// <summary>
+        /// Instantiate unresolved dependencies
+        /// </summary>
+        /// <param name="typeMap">unresolved dependencies</param>
+        /// <exception cref="Exception">if scope unsupported</exception>
+        private void InstantiateTypes(Dictionary<Type, Dependency> typeMap)
         {
             var iteration = typeMap.Count;
             while (typeMap.Count > 0 && iteration == typeMap.Count)
             {
                 var toRemove = new List<Type>();
-                foreach (var (type, asType) in typeMap)
+                foreach (var (type, dependency) in typeMap)
                 {
-                    // Instantiate through no arg constructor  
-                    var instance = type.GetConstructor(new Type[0])?.Invoke(null);
-                    if (instance == null)
-                    {
-                        var ctr = type.GetConstructors().First();
-                        instance = InstantiateTypes(ctr);
-                    }
+                    var instance = InstantiateType(type);
 
                     if (instance != null)
                     {
-                        _instanceMap[asType] = instance;
+                        var resolvedDependency = dependency.Scope switch
+                        {
+                            DependencyScope.Singleton => instance,
+                            DependencyScope.Prototype => new InstanceProducer(() => InstantiateType(type)),
+                            _ => throw new Exception("Unsupported scope exception")
+                        };
+                        _instanceMap[dependency.AsType] = resolvedDependency;
+                        _instanceMap[dependency.Type] = resolvedDependency;
+
                         toRemove.Add(type);
                     }
                 }
+
                 foreach (var type in toRemove)
                 {
                     typeMap.Remove(type);
@@ -59,7 +94,25 @@ namespace Decembrist.Di
             }
         }
 
-        private object? InstantiateTypes(ConstructorInfo ctr)
+        private object? InstantiateType(Type type)
+        {
+            // Instantiate through no arg constructor  
+            var instance = type.GetConstructor(new Type[0])?.Invoke(null);
+            if (instance == null)
+            {
+                var ctr = type.GetConstructors().First();
+                instance = InstantiateConstructor(ctr);
+            }
+
+            return instance;
+        }
+
+        /// <summary>
+        /// Instantiate from constructor by params
+        /// </summary>
+        /// <param name="ctr">constructor</param>
+        /// <returns>instantiated object or null</returns>
+        private object? InstantiateConstructor(ConstructorInfo ctr)
         {
             var parameters = ctr.GetParameters();
             var paramArgs = new List<object>(parameters.Length);
@@ -74,9 +127,8 @@ namespace Decembrist.Di
                 {
                     break;
                 }
-
             }
-            
+
             object? result = null;
             if (parameters.Length == paramArgs.Count)
             {
@@ -85,31 +137,62 @@ namespace Decembrist.Di
 
             return result;
         }
-    }
 
-    public class ContainerBuilder
-    {
-        private readonly Dictionary<Type, object> _instanceMap = new Dictionary<Type, object>();
-        private readonly Dictionary<Type, Type> _typeMap = new Dictionary<Type, Type>();
-
-        public ContainerBuilder RegisterInstance<T>(T instance)
+        /// <summary>
+        /// Dependency storage
+        /// </summary>
+        internal class Dependency
         {
-            if (instance == null) throw new Exception("Null instance registration");
+            public Type Type { get; }
+            /// <summary>
+            /// Dependency type registered for
+            /// </summary>
+            public Type AsType { get; }
+            /// <summary>
+            /// Instance != null if dependency resolved
+            /// </summary>
+            public object? Instance { get; }
+            public DependencyScope Scope { get; }
 
-            _instanceMap[typeof(T)] = instance;
-            return this;
+            private Dependency(object? instance, Type type, DependencyScope scope, Type? asType = null)
+            {
+                if (!ValidAsType(type, asType))
+                {
+                    throw new Exception($"{type} should be subtype of {asType}");
+                }
+
+                Type = type;
+                Instance = instance;
+                Scope = scope;
+                AsType = asType ?? type;
+            }
+
+            private static bool ValidAsType(Type type, Type? asType)
+            {
+                return asType == null 
+                       || asType == type 
+                       || type.IsSubclassOf(asType) 
+                       || type.IsInstanceOfType(asType)
+                       || type.GetInterface(asType.Name) != null;
+            }
+
+            public Dependency(object instance, DependencyScope scope, Type? asType = null) : this(
+                instance ?? throw new Exception("Unknown dependency type"),
+                instance.GetType(),
+                scope,
+                asType
+            )
+            {
+            }
+
+            public Dependency(Type type, DependencyScope scope, Type? asType = null) : this(
+                null,
+                type ?? throw new Exception("Unknown dependency type"),
+                scope,
+                asType
+            )
+            {
+            }
         }
-
-        public void Register<T>()
-        {
-            _typeMap[typeof(T)] = typeof(T);
-        }
-
-        public void Register<TYpe, TYpeAs>()
-        {
-            _typeMap[typeof(TYpe)] = typeof(TYpeAs);
-        }
-
-        public Container Build() => new Container(_instanceMap, _typeMap);
     }
 }
