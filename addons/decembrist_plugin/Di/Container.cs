@@ -57,7 +57,7 @@ namespace Decembrist.Di
         private void InstantiateTypes(Dictionary<Type, Dependency> typeMap)
         {
             var iteration = typeMap.Count;
-            while (typeMap.Count > 0 && iteration == typeMap.Count)
+            while (typeMap.Count > 0 && iteration >= 0)
             {
                 var toRemove = new List<Type>();
                 foreach (var (type, dependency) in typeMap)
@@ -89,8 +89,7 @@ namespace Decembrist.Di
 
             if (typeMap.Count != 0)
             {
-                var typesArr = typeMap.Values.Select(type => type.ToString()).ToArray();
-                throw new Exception($"Unsatisfied dependencies {string.Join("", typesArr)}");
+                ThrowUnsatisfiedDependenciesException(typeMap);
             }
         }
 
@@ -107,6 +106,14 @@ namespace Decembrist.Di
             return instance;
         }
 
+        private void ThrowUnsatisfiedDependenciesException(Dictionary<Type, Dependency> typeMap)
+        {
+            var typesArr = typeMap.Values
+                .Select(type => type.ToString())
+                .ToArray();
+            throw new Exception($"Unsatisfied dependencies for [{string.Join(", ", typesArr)}]");
+        }
+
         /// <summary>
         /// Instantiate from constructor by params
         /// </summary>
@@ -121,7 +128,8 @@ namespace Decembrist.Di
                 var paramType = parameter.ParameterType;
                 if (_instanceMap.ContainsKey(paramType))
                 {
-                    paramArgs.Add(_instanceMap[paramType]);
+                    var instance = ResolveOrNull(paramType)!;
+                    paramArgs.Add(instance);
                 }
                 else
                 {
@@ -192,6 +200,11 @@ namespace Decembrist.Di
                 asType
             )
             {
+            }
+
+            public override string ToString()
+            {
+                return $"{{\"type\": \"{Type}\", \"asType\": \"{AsType}\"}}";
             }
         }
     }
