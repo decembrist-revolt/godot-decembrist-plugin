@@ -8,18 +8,14 @@ using DiContainer = Decembrist.Di.Container;
 
 namespace Decembrist.Autoload
 {
-    public class DiService : Node2D
+    public class DiService : Node
     {
-        public DiContainer Container;
-
-        public override void _Ready()
-        {
-        }
+        public readonly DiContainer Container;
 
         public DiService()
         {
             var builder = new ContainerBuilder();
-            builder.RegisterInstance(new ConfigService());
+            builder.Register<EventBus>();
             builder = InstantiateConfig()?.ConfigDi(builder) ?? builder;
             Container = builder.Build();
         }
@@ -35,28 +31,58 @@ namespace Decembrist.Autoload
             var fields = type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
             foreach (var field in fields)
             {
-                if (field.GetCustomAttribute(typeof(Inject)) != null)
-                {
-                    var serviceType = field.FieldType;
-                    var service = Container.ResolveOrNull(serviceType);
-                    if (service != null)
-                    {
-                        field.SetValue(instance, service);
-                    }
-                    else
-                    {
-                        GD.PrintErr($"No such type registered in container: {serviceType} for class {type}");
-                    }
-                }
+                HandleInject(instance, field, type);
+                HandleSettingsValue(instance, field, type);
+            }
+        }
+
+        /// <summary>
+        /// Handle [Inject] attribute <see cref="InjectAttribute"/>
+        /// </summary>
+        private void HandleInject(object instance, FieldInfo field, Type? type)
+        {
+            if (field.GetCustomAttribute(typeof(InjectAttribute)) == null) return;
+
+            var serviceType = field.FieldType;
+            var service = Container.ResolveOrNull(serviceType);
+            if (service != null)
+            {
+                field.SetValue(instance, service);
+            }
+            else
+            {
+                throw new UnsatisfiedDependencyException($"class {type}. Dependency type => {serviceType}");
+            }
+        }
+
+        /// <summary>
+        /// Handle [SettingsValue] attribute <see cref="SettingsValueAttribute"/>
+        /// </summary>
+        private void HandleSettingsValue(object instance, FieldInfo field, Type type)
+        {
+            var attribute = field.GetCustomAttribute(typeof(SettingsValueAttribute));
+            if (attribute is not SettingsValueAttribute settingsAttribute) return;
+
+            var settingsName = settingsAttribute.Name;
+            var settingsValue = ProjectSettings.GetSetting(settingsName);
+            var fieldType = field.FieldType;
+            if (settingsValue != null && fieldType.IsInstanceOfType(settingsValue))
+            {
+                field.SetValue(instance, settingsValue);
+            }
+            else
+            {
+                throw new UnsatisfiedDependencyException($"class {type}. Settings value => {settingsName} not found");
             }
         }
 
         private IDecembristConfiguration? InstantiateConfig()
         {
-            if (!(ProjectSettings.GetSetting("decembrist/config_class") is string configClass))
+            if (ProjectSettings.GetSetting(DecembristSettings.ConfigClass) is not string configClass)
             {
                 return null;
             }
+
             var configType = Type.GetType(configClass);
             if (configType == null)
             {

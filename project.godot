@@ -31,11 +31,16 @@ config/icon="res://icon.png"
 
 [autoload]
 
-DI="*res://addons/decembrist_plugin/Autoload/DiService.cs"
+DecembristAutoload="*res://addons/decembrist_plugin/Autoload/DecembristAutoload.cs"
 
 [decembrist]
 
 config_class="Decembrist.Example.DecembristConfiguration"
+
+[decembrist_plugin]
+
+commons/config_class="Decembrist.Example.DecembristConfiguration"
+commons/event_bus_enabled=true
 
 [editor_plugins]
 

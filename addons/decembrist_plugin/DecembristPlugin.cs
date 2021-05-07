@@ -6,13 +6,14 @@ public class DecembristPlugin : EditorPlugin
 {
     public override void EnablePlugin()
     {
-        AddAutoloadSingleton("DI", "res://addons/decembrist_plugin/Autoload/DiService.cs");
-        CheckSetting("decembrist/config_class", "DecembristConfiguration");
+        AddAutoloadSingleton("DecembristAutoload", "res://addons/decembrist_plugin/Autoload/DecembristAutoload.cs");
+        CheckSetting(DecembristSettings.ConfigClass, "DecembristConfiguration");
+        CheckSetting(DecembristSettings.EventBusEnabled, true);
     }
 
     public override void DisablePlugin()
     {
-        RemoveAutoloadSingleton("DI");
+        RemoveAutoloadSingleton("DecembristAutoload");
     }
 
     private void CheckSetting(string name, object @default)

@@ -111,7 +111,7 @@ namespace Decembrist.Di
             var typesArr = typeMap.Values
                 .Select(type => type.ToString())
                 .ToArray();
-            throw new Exception($"Unsatisfied dependencies for [{string.Join(", ", typesArr)}]");
+            throw new UnsatisfiedDependencyException($"[{string.Join(", ", typesArr)}]");
         }
 
         /// <summary>
