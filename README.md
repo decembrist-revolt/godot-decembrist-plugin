@@ -4,4 +4,4 @@ _Utils for godot development_
 * Event driven development
 * Util classes for _Buttons_, _Controls_, _Vectors_ etc
 
-[Documentation](https://github.com/decembrist-revolt/godot-decembrist-plugin/wiki)
+[Documentation](https://godotplugin.decembrist.org)
