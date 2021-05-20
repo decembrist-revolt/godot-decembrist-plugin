@@ -1,7 +1,7 @@
 using Decembrist.Events;
 using Godot;
 
-namespace Decembrist.Example.EventBusTest
+namespace Decembrist.Example.EventBusMessages
 {
     public class Consumer : Node2D
     {
@@ -16,13 +16,13 @@ namespace Decembrist.Example.EventBusTest
         public override void _Ready()
         {
             var messageCount1 = 0;
-            _subscription1 = this.Consumer<int, int>(ConsumerAddress1, message =>
+            _subscription1 = this.MessageEndpoint<int, int>(ConsumerAddress1, message =>
             {
                 messageCount1++;
                 HandleMessage(_subscription1, message, messageCount1);
             });
             var messageCount2 = 0;
-            _subscription2 = this.Consumer<int, int>(ConsumerAddress2, message =>
+            _subscription2 = this.MessageEndpoint<int, int>(ConsumerAddress2, message =>
             {
                 messageCount2++;
                 HandleMessage(_subscription2, message, messageCount2);
@@ -31,18 +31,18 @@ namespace Decembrist.Example.EventBusTest
 
         private void HandleMessage(
             EventBusSubscription eventBusSubscription, 
-            ReplyEventMessage<int, int> message,
+            ReplyEventBusRequest<int, int> busRequest,
             int messageCount)
         {
-            Assertions.AssertTrue(!message.IsError(), "not error message");
+            Assertions.AssertTrue(!busRequest.IsError(), "not error message");
             if (messageCount > 5)
             {
-                message.ErrorReply("test error", 2);
+                busRequest.ErrorReply("test error", 2);
                 eventBusSubscription.Stop();
             }
             else
             {
-                message.Reply(message.Content + 1);
+                busRequest.Reply(busRequest.Content + 1);
             }
         }
     }

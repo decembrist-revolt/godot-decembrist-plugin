@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Godot;
 using Decembrist.Utils.Callback;
+using Godot;
 using VoidTask = System.Threading.Tasks.Task;
 
 namespace Decembrist.Utils.Task
@@ -34,7 +32,7 @@ namespace Decembrist.Utils.Task
         {
             if (_callback != null) throw new Exception("Animation started already");
 
-            _animationTask = Promises.Of((resolve, reject) =>
+            _animationTask = Promises.Of((resolve, _) =>
             {
                 _callback = SubscribeOnAnimationFinished(animationName, resolve);
                 _animObject.Queue(animationName);

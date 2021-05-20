@@ -1,11 +1,10 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Decembrist.Events;
 using Godot;
 using static Decembrist.Example.Assertions;
 
-namespace Decembrist.Example.EventBusTest
+namespace Decembrist.Example.EventBusMessages
 {
     [Tool]
     public class Producer : Node2D
@@ -21,7 +20,7 @@ namespace Decembrist.Example.EventBusTest
         public override async void _Ready()
         {
             await Task.Delay(1000);
-            GD.Print($"EventBus test started for {_messageAddress}....................");
+            GD.Print($"EventBus message test started for {_messageAddress}............");
             const int messageCount = 6;
             ProduceMessages(messageCount);
             await Task.Delay(1000);
@@ -33,7 +32,7 @@ namespace Decembrist.Example.EventBusTest
 
             AssertTrue(_errorMessage == Consumer.TestError, "event bus error message ok");
             AssertTrue(_errorCode == Consumer.TestErrorCode, "event bus error code ok");
-            GD.Print("EventBus test stopped...........................................");
+            GD.Print("EventBus message test stopped...................................");
         }
 
         private async void ProduceMessages(int messageCount)
@@ -42,7 +41,7 @@ namespace Decembrist.Example.EventBusTest
             {
                 try
                 {
-                    var response = await this.SendMessageAsync<int, int>(_messageAddress, i);
+                    var response = await this.SendMessageRequestAsync<int, int>(_messageAddress, i);
                     _responses.Add(response);
                 }
                 catch (SendEventException ex)

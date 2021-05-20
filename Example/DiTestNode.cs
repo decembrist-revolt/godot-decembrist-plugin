@@ -1,8 +1,6 @@
-using System;
-using Godot;
 using Decembrist.Di;
 using Decembrist.Example.Service;
-using Decembrist.Utils;
+using Godot;
 using static Decembrist.Example.Assertions;
 
 namespace Decembrist.Example

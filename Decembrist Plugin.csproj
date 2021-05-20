@@ -4,7 +4,4 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>Decembrist</RootNamespace>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Include="README.md" />
-  </ItemGroup>
 </Project>

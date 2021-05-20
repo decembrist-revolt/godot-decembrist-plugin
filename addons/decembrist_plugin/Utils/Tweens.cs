@@ -1,6 +1,6 @@
 ﻿using System;
-using Godot;
 using Decembrist.Utils.Callback;
+using Godot;
 
 namespace Decembrist.Utils
 {
@@ -10,7 +10,7 @@ namespace Decembrist.Utils
     public static class Tweens
     {
         public static void InterpolateProperty(
-            Tween tween,
+            this Tween tween,
             Godot.Object obj,
             NodePath property,
             object initialVal,

@@ -1,21 +1,12 @@
 ﻿using System;
-using Godot;
 using Decembrist.Utils.Callback;
+using Godot;
 
 namespace Decembrist.Utils
 {
     public static class Areas
     {
-        public static AbstractCallback OnPointerEnter(this Area2D area, Action callback)
-        {
-            return area.Subscribe("mouse_entered", callback);
-        }
-        
-        public static AbstractCallback OnPointerExit(this Area2D area, Action callback)
-        {
-            return area.Subscribe("mouse_exited", callback);
-        }
-        
+
         /// <summary>
         /// Invokes on input event
         /// </summary>
