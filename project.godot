@@ -27,7 +27,7 @@ Display=8
 
 config/name="Decembrist Plugin"
 run/main_scene="res://Example/TestScene.tscn"
-config/icon="res://icon.png"
+config/icon="res://.gdignore/icon.png"
 
 [autoload]
 

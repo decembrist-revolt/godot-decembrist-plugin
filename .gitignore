@@ -49,3 +49,11 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
+# Godot-specific ignores
+*.import
+
+# Mono-specific ignores
+addons/Todo_Manager/todo.cfg
+*.csproj
+*.sln
+
