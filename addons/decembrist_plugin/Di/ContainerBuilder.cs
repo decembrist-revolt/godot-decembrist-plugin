@@ -1,7 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Collections.Generic;
-using Dependency = Decembrist.Di.Container.Dependency;
+using Decembrist.Di.Handler;
 
 namespace Decembrist.Di
 {
@@ -10,8 +10,9 @@ namespace Decembrist.Di
     /// </summary>
     public class ContainerBuilder
     {
-        private readonly Dictionary<Type, Dependency> _instanceMap = new();
-        private readonly Dictionary<Type, Dependency> _typeMap = new();
+        private readonly Dictionary<Type, Container.Dependency> _instanceMap = new();
+        private readonly Dictionary<Type, Container.Dependency> _typeMap = new();
+        public IList<IParameterAttributeHandler>? ParamHandlers { private set; get; }
 
         /// <summary>
         /// Register singleton instance
@@ -24,7 +25,7 @@ namespace Decembrist.Di
         {
             if (instance == null) throw new Exception("Null instance registration");
 
-            _instanceMap[typeof(T)] = new Dependency(instance, DependencyScope.Singleton);
+            _instanceMap[typeof(T)] = new Container.Dependency(instance, DependencyScope.Singleton);
             return this;
         }
 
@@ -45,7 +46,7 @@ namespace Decembrist.Di
         /// <returns>this ContainerBuilder</returns>
         public ContainerBuilder Register<T, TA>(DependencyScope scope = DependencyScope.Singleton)
         {
-            _typeMap[typeof(T)] = new Dependency(typeof(T), scope, typeof(TA));
+            _typeMap[typeof(T)] = new Container.Dependency(typeof(T), scope, typeof(TA));
             return this;
         }
 
@@ -57,7 +58,7 @@ namespace Decembrist.Di
         /// <typeparam name="T">Dependency type</typeparam>
         /// <returns>this ContainerBuilder</returns>
         public ContainerBuilder RegisterPrototype<T>() => Register<T>(DependencyScope.Prototype);
-        
+
         /// <summary>
         /// <see cref="Register{T, TA}"/> with prototype dependency scope <see cref="DependencyScope.Prototype"/>
         /// </summary>
@@ -66,9 +67,12 @@ namespace Decembrist.Di
         /// <returns>this ContainerBuilder</returns>
         public ContainerBuilder RegisterPrototype<T, TA>() => Register<T, TA>(DependencyScope.Prototype);
 
-        internal Container Build() => new(_instanceMap, _typeMap);
-        
-    }
+        public ContainerBuilder SetParameterHandlers(IList<IParameterAttributeHandler> paramHandlers)
+        {
+            ParamHandlers = paramHandlers;
+            return this;
+        }
 
-    
+        internal Container Build() => new(_instanceMap, _typeMap, ParamHandlers);
+    }
 }

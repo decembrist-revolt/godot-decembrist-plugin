@@ -16,9 +16,19 @@ namespace Decembrist.Autoload
     {
         public const string NodeName = "EventBus";
 
+        /// <summary>
+        /// Event emits on new event listener registration (string eventName payload)
+        /// </summary>
+        public const string EventSubscriptionEvent = "event-subscription-event";
+
+        /// <summary>
+        /// Event emits on <see cref="Emit"/> method invoke (<see cref="EmitEventPayload"/> payload)
+        /// </summary>
+        public const string EventEmitEvent = "event-emit-event";
+
         [Signal]
         private delegate void MessageSignal(string source, string messageId);
-        
+
         [Signal]
         private new delegate void EmitSignal(string address, string messageId);
 
@@ -79,25 +89,23 @@ namespace Decembrist.Autoload
             _messages[messageId] = eventMessage;
             EmitSignal(nameof(MessageSignal), to, messageId);
         }
-        
+
         /// <summary>
         /// Send message through event bus for every registered consumer
         /// </summary>
-        /// <param name="to">Message address</param>
-        /// <param name="message">Message content</param>
-        /// <param name="replyHandler">Consumer response handler</param>
-        /// <typeparam name="TRequest">Message content type</typeparam>
-        /// <typeparam name="TResponse">Response message type</typeparam>
+        /// <param name="event">Event name</param>
+        /// <param name="body">Event payload</param>
         public void Emit(string @event, object? body)
         {
             var messageId = Uuid.Get();
             _eventMessages[messageId] = body;
             EmitSignal(nameof(EmitSignal), @event, messageId);
             _eventMessages.TryRemove(messageId, out var eventBody);
+            EmitEmittedEvent(@event, body);
         }
 
         /// <summary>
-        /// Async version for <see cref="Send{T,TR}(string,T?,System.Action{EventBusRequest{T}})"/>
+        /// Async version for <see cref="Send{TRequest,TResponse}(string,TRequest?,System.Action{Decembrist.Events.EventBusRequest{TResponse}})"/>
         /// </summary>
         /// <param name="to">Message address</param>
         /// <param name="message">Message content</param>
@@ -141,7 +149,7 @@ namespace Decembrist.Autoload
 
                     _messages.TryRemove(messageId, out var message);
                     if (message is not ReplyEventBusRequest<TRequest, TResponse> eventMessage) return;
-                    
+
                     messageHandler(eventMessage);
                     if (!eventMessage.Replied)
                     {
@@ -173,8 +181,21 @@ namespace Decembrist.Autoload
                     eventHandler((TRequest) body);
                 }
             });
-            
+            EmitEventSubscriptionEvent(@event);
             return new EventBusSubscription(this, callback, signal);
+        }
+
+        private async void EmitEmittedEvent(string @event, object? body)
+        {
+            if (@event != EventEmitEvent)
+            {
+                Emit(EventEmitEvent, new EmitEventPayload(@event, body));
+            }
+        }
+
+        private async void EmitEventSubscriptionEvent(string @event)
+        {
+            Emit(EventSubscriptionEvent, @event);
         }
     }
 }

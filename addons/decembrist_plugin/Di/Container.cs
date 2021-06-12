@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Decembrist.Service;
+using Decembrist.Di.Handler;
 
 namespace Decembrist.Di
 {
@@ -14,15 +14,22 @@ namespace Decembrist.Di
     {
         public delegate object InstanceProducer();
 
-        private readonly Dictionary<Type, object> _instanceMap = new();
-        
+        private readonly IList<IParameterAttributeHandler> _paramHandlers;
+
+        public readonly Dictionary<Type, object> InstanceMap = new();
+
         /// <param name="instanceMap">Resolved instances</param>
         /// <param name="typeMap">Unresolved dependencies</param>
-        internal Container(Dictionary<Type, Dependency> instanceMap, Dictionary<Type, Dependency> typeMap)
+        /// <param name="paramHandlers">Param handlers list</param>
+        internal Container(
+            Dictionary<Type, Dependency> instanceMap,
+            Dictionary<Type, Dependency> typeMap,
+            IList<IParameterAttributeHandler>? paramHandlers)
         {
+            _paramHandlers = paramHandlers ?? new List<IParameterAttributeHandler>();
             foreach (var (type, dependency) in instanceMap)
             {
-                _instanceMap[type] = dependency.Instance!;
+                InstanceMap[type] = dependency.Instance!;
             }
 
             InstantiateTypes(typeMap);
@@ -35,7 +42,7 @@ namespace Decembrist.Di
         /// <returns>instance or null</returns>
         public object? ResolveOrNull(Type type)
         {
-            var instance = _instanceMap.ContainsKey(type) ? _instanceMap[type] : null;
+            var instance = InstanceMap.ContainsKey(type) ? InstanceMap[type] : null;
             object? result;
             if (instance is InstanceProducer instanceProducer)
             {
@@ -72,8 +79,8 @@ namespace Decembrist.Di
                             DependencyScope.Prototype => new InstanceProducer(() => InstantiateType(type)),
                             _ => throw new Exception("Unsupported scope exception")
                         };
-                        _instanceMap[dependency.AsType] = resolvedDependency;
-                        _instanceMap[dependency.Type] = resolvedDependency;
+                        InstanceMap[dependency.AsType] = resolvedDependency;
+                        InstanceMap[dependency.Type] = resolvedDependency;
 
                         toRemove.Add(type);
                     }
@@ -97,11 +104,10 @@ namespace Decembrist.Di
         {
             // Instantiate through no arg constructor  
             var instance = type.GetConstructor(new Type[0])?.Invoke(null);
-            if (instance == null)
-            {
-                var ctr = type.GetConstructors().First();
-                instance = InstantiateConstructor(ctr);
-            }
+            if (instance != null) return instance;
+
+            var ctr = type.GetConstructors().First();
+            instance = InstantiateConstructor(ctr);
 
             return instance;
         }
@@ -126,9 +132,16 @@ namespace Decembrist.Di
             foreach (var parameter in parameters)
             {
                 var paramType = parameter.ParameterType;
-                if (_instanceMap.ContainsKey(paramType))
+                var instance = _paramHandlers
+                    .Select(handler => handler.Handle(parameter))
+                    .FirstOrDefault(obj => obj != null);
+                if (instance != null)
                 {
-                    var instance = ResolveOrNull(paramType)!;
+                    paramArgs.Add(instance);
+                }
+                else if (InstanceMap.ContainsKey(paramType))
+                {
+                    instance = ResolveOrNull(paramType)!;
                     paramArgs.Add(instance);
                 }
                 else
@@ -152,14 +165,17 @@ namespace Decembrist.Di
         internal class Dependency
         {
             public Type Type { get; }
+
             /// <summary>
             /// Dependency type registered for
             /// </summary>
             public Type AsType { get; }
+
             /// <summary>
             /// Instance != null if dependency resolved
             /// </summary>
             public object? Instance { get; }
+
             public DependencyScope Scope { get; }
 
             private Dependency(object? instance, Type type, DependencyScope scope, Type? asType = null)
@@ -177,9 +193,9 @@ namespace Decembrist.Di
 
             private static bool ValidAsType(Type type, Type? asType)
             {
-                return asType == null 
-                       || asType == type 
-                       || type.IsSubclassOf(asType) 
+                return asType == null
+                       || asType == type
+                       || type.IsSubclassOf(asType)
                        || type.IsInstanceOfType(asType)
                        || type.GetInterface(asType.Name) != null;
             }

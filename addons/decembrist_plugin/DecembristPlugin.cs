@@ -9,6 +9,7 @@ public class DecembristPlugin : EditorPlugin
         AddAutoloadSingleton("DecembristAutoload", "res://addons/decembrist_plugin/Autoload/DecembristAutoload.cs");
         CheckSetting(DecembristSettings.ConfigClass, "DecembristConfiguration");
         CheckSetting(DecembristSettings.EventBusEnabled, true);
+        CheckSetting(DecembristSettings.LanEventsEnabled, false);
     }
 
     public override void DisablePlugin()

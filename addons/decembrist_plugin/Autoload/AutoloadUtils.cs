@@ -18,5 +18,12 @@ namespace Decembrist.Autoload
         /// <returns>EventBus instance</returns>
         public static EventBus GetEventBus(this Node node) =>
             node.GetNode<DecembristAutoload>("/root/DecembristAutoload").EventBus;
+        
+        /// <summary>
+        /// Get lan event bus singleton instance
+        /// </summary>
+        /// <returns>LanEventBus instance</returns>
+        public static LanEventBus GetLanEventBus(this Node node) =>
+            node.GetNode<DecembristAutoload>("/root/DecembristAutoload").LanEventBus;
     }
 }

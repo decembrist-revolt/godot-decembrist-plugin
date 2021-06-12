@@ -1,5 +1,4 @@
 ﻿using System;
-using Godot;
 
 namespace Decembrist.Utils.Callback
 {
@@ -29,6 +28,13 @@ namespace Decembrist.Utils.Callback
         public static AbstractCallback Subscribe<T1, T2, T3>(this Godot.Object @object, string signal, Action<T1, T2, T3> callback)
         {
             var action = new GodotAction3Callback<T1, T2, T3>(callback);
+            @object.Connect(signal, action, nameof(action.Invoke));
+            return action;
+        }
+        
+        public static AbstractCallback Subscribe<T1, T2, T3, T4>(this Godot.Object @object, string signal, Action<T1, T2, T3, T4> callback)
+        {
+            var action = new GodotAction4Callback<T1, T2, T3, T4>(callback);
             @object.Connect(signal, action, nameof(action.Invoke));
             return action;
         }

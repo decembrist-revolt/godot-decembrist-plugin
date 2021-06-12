@@ -1,12 +1,12 @@
+using System.Threading.Tasks;
 using Decembrist.Events;
 using Godot;
 
 namespace Decembrist.Example.EventBusEvents
 {
-    public class EventTest : Node2D
+    public class EventTest : Node2D, ITest
     {
-
-        public override void _Ready()
+        public async Task Test()
         {
             var messageCount = 0;
 
@@ -14,7 +14,7 @@ namespace Decembrist.Example.EventBusEvents
             {
                 messageCount++;
             }
-            GD.Print("EventBus event test started for........................................");
+            
             var subscription1 = this.EventListener("event1", IncrementCountCallback);
             var subscription2 = this.EventListener("event1", IncrementCountCallback);
             this.FireEvent("event1");

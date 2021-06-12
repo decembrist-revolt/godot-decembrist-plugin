@@ -4,10 +4,10 @@ using Decembrist.Events;
 using Godot;
 using static Decembrist.Example.Assertions;
 
-namespace Decembrist.Example.EventBusMessages
+namespace Decembrist.Example.EventBusMessageTest
 {
     [Tool]
-    public class Producer : Node2D
+    public class Producer : Node2D, ITest
     {
         private readonly List<int> _responses = new();
 
@@ -17,10 +17,8 @@ namespace Decembrist.Example.EventBusMessages
 
         [Export] private string _messageAddress;
 
-        public override async void _Ready()
+        public async Task Test()
         {
-            await Task.Delay(1000);
-            GD.Print($"EventBus message test started for {_messageAddress}............");
             const int messageCount = 6;
             ProduceMessages(messageCount);
             await Task.Delay(1000);
@@ -30,9 +28,8 @@ namespace Decembrist.Example.EventBusMessages
                 AssertTrue(_responses[i - 1] == i + 1, "message response ok");
             }
 
-            AssertTrue(_errorMessage == Consumer.TestError, "event bus error message ok");
-            AssertTrue(_errorCode == Consumer.TestErrorCode, "event bus error code ok");
-            GD.Print("EventBus message test stopped...................................");
+            AssertTrue(_errorMessage == EventBusMessageTest.TestError, "event bus error message ok");
+            AssertTrue(_errorCode == EventBusMessageTest.TestErrorCode, "event bus error code ok");
         }
 
         private async void ProduceMessages(int messageCount)
