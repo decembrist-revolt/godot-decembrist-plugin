@@ -1,0 +1,228 @@
+[gd_scene load_steps=9 format=2]
+
+[ext_resource path="res://addons/decembrist_plugin/Resource/refresh.png" type="Texture" id=1]
+[ext_resource path="res://addons/decembrist_plugin/Dock/Roboto-Black.ttf" type="DynamicFontData" id=2]
+[ext_resource path="res://addons/decembrist_plugin/State/UI/State/StatePanel.tscn" type="PackedScene" id=3]
+
+[sub_resource type="DynamicFont" id=1]
+size = 25
+font_data = ExtResource( 2 )
+
+[sub_resource type="DynamicFont" id=2]
+font_data = ExtResource( 2 )
+
+[sub_resource type="DynamicFont" id=3]
+size = 20
+font_data = ExtResource( 2 )
+
+[sub_resource type="DynamicFont" id=4]
+font_data = ExtResource( 2 )
+
+[sub_resource type="DynamicFont" id=5]
+size = 25
+font_data = ExtResource( 2 )
+
+[node name="StateMachine" type="GraphEdit"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="StateMachinesComboButton" type="OptionButton" parent="."]
+visible = false
+anchor_left = 0.738
+anchor_top = 0.062
+anchor_right = 0.952
+anchor_bottom = 0.117
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="NoStateMachineLabel" type="Label" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -6.36786
+margin_top = 1.87288
+margin_right = -6.36786
+margin_bottom = 1.87286
+custom_fonts/font = SubResource( 1 )
+text = "NO STATE MACHINE"
+align = 1
+valign = 1
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="RefreshButton" type="Button" parent="."]
+anchor_left = 0.955
+anchor_top = 0.062
+anchor_right = 0.988
+anchor_bottom = 0.117
+margin_left = -6.10352e-05
+margin_bottom = -7.62939e-06
+icon = ExtResource( 1 )
+expand_icon = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="NewMachineButton" type="Button" parent="."]
+anchor_left = 0.829
+anchor_top = 0.062
+anchor_right = 0.945
+anchor_bottom = 0.117
+custom_fonts/font = SubResource( 2 )
+text = "New Machine"
+expand_icon = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="SaveMachineButton" type="Button" parent="."]
+visible = false
+anchor_left = 0.829
+anchor_top = 0.062
+anchor_right = 0.945
+anchor_bottom = 0.117
+custom_fonts/font = SubResource( 2 )
+text = "Save Machine"
+expand_icon = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CloseMachineButton" type="Button" parent="."]
+anchor_left = 0.829
+anchor_top = 0.125
+anchor_right = 0.945
+anchor_bottom = 0.18
+custom_fonts/font = SubResource( 2 )
+text = "Close Machine"
+expand_icon = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="OpenMachineButton" type="Button" parent="."]
+anchor_left = 0.829
+anchor_top = 0.125
+anchor_right = 0.945
+anchor_bottom = 0.18
+custom_fonts/font = SubResource( 2 )
+text = "Open Machine"
+expand_icon = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="NewStateButton" type="Button" parent="."]
+visible = false
+anchor_left = 0.702
+anchor_top = 0.062
+anchor_right = 0.824
+anchor_bottom = 0.117
+custom_fonts/font = SubResource( 2 )
+text = "New State"
+expand_icon = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ConnectStateButton" type="Button" parent="."]
+visible = false
+anchor_left = 0.702
+anchor_top = 0.062
+anchor_right = 0.824
+anchor_bottom = 0.117
+custom_fonts/font = SubResource( 2 )
+text = "Connect States"
+expand_icon = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="RenameStateButton" type="Button" parent="."]
+visible = false
+anchor_left = 0.702
+anchor_top = 0.062
+anchor_right = 0.824
+anchor_bottom = 0.117
+custom_fonts/font = SubResource( 2 )
+text = "Rename State"
+expand_icon = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="StateMachinePanel" type="Panel" parent="."]
+visible = false
+anchor_left = 0.3
+anchor_top = 0.25
+anchor_right = 0.7
+anchor_bottom = 0.75
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="StateMachineNameEdit" type="LineEdit" parent="StateMachinePanel"]
+anchor_left = 0.1
+anchor_top = 0.25
+anchor_right = 0.9
+anchor_bottom = 0.4
+custom_fonts/font = SubResource( 3 )
+align = 1
+placeholder_text = "State machine name"
+
+[node name="SaveButton" type="Button" parent="StateMachinePanel"]
+anchor_left = 0.1
+anchor_top = 0.7
+anchor_right = 0.45
+anchor_bottom = 0.85
+custom_fonts/font = SubResource( 4 )
+text = "Save"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="CancelButton" type="Button" parent="StateMachinePanel"]
+anchor_left = 0.55
+anchor_top = 0.7
+anchor_right = 0.9
+anchor_bottom = 0.85
+custom_fonts/font = SubResource( 4 )
+text = "Cancel"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="StateMachinePanel"]
+anchor_left = 0.098
+anchor_top = 0.047
+anchor_right = 0.9
+anchor_bottom = 0.17
+custom_fonts/font = SubResource( 5 )
+text = "New state machine"
+align = 1
+valign = 1
+
+[node name="StatePanel" parent="." instance=ExtResource( 3 )]
+visible = false
+
+[node name="NewMachineDialog" type="FileDialog" parent="."]
+margin_left = 2.61963
+margin_top = -1.19055
+margin_right = 589.62
+margin_bottom = 309.809
+filters = PoolStringArray( "*.tres" )
+current_file = "StateMachine"
+current_path = "res://StateMachine"
+
+[node name="LoadMachineDialog" type="FileDialog" parent="."]
+margin_left = 2.61963
+margin_top = -1.19055
+margin_right = 589.62
+margin_bottom = 309.809
+window_title = "Open a File"
+mode = 0
+filters = PoolStringArray( "*.tres" )

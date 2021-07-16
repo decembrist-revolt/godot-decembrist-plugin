@@ -4,10 +4,10 @@ namespace Decembrist.Utils
 {
     public static class SceneFactory
     {
-        public static T GetInstance<T>(SceneInfo<T> info) where T : Node
+        public static T GetInstance<T>(this SceneInfo<T> info) where T : Node
         {
             var scene = (PackedScene) ResourceLoader.Load(info.ResourcePath);
-            return (T) scene.Instance();
+            return scene.Instance() as T;
         }
     }
     
