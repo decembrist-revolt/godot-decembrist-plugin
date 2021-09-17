@@ -1,10 +1,11 @@
 using System;
+using Decembrist.State;
 using Godot;
 
 namespace Decembrist.Example.StateMachineTest
 {
     [Tool]
-    public class Idle : State.State
+    public class IdleState : StateScript
     {
         public override void OnEnter(Node sceneRoot)
         {

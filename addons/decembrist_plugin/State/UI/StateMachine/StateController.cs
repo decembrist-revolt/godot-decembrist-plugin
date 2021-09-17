@@ -5,7 +5,6 @@ using System.Linq;
 using Decembrist.State.UI.State;
 using Decembrist.Utils;
 using Godot;
-using StateData = Decembrist.State.State;
 
 namespace Decembrist.State.UI.StateMachine
 {
@@ -19,7 +18,10 @@ namespace Decembrist.State.UI.StateMachine
         private Button _newStateButton;
         private Button _connectStateButton;
         private Button _renameStateButton;
+        private Button _attachStateScriptButton;
+        private Button _resetStateScriptButton;
         private StatePanelController _statePanel;
+        private FileDialog _attachStateScriptDialog;
 
         private List<GraphNode> _selectedBlocks = new();
         private Dictionary<string, GraphNode> _stateBlocks = new();
@@ -35,6 +37,12 @@ namespace Decembrist.State.UI.StateMachine
             _connectStateButton.OnButtonPress(ConnectStates);
             _renameStateButton = _stateMachineGraph.GetNode<Button>("RenameStateButton");
             _renameStateButton.OnButtonPress(ShowRenameStatePanel);
+            _attachStateScriptButton = _stateMachineGraph.GetNode<Button>("AttachStateScriptButton");
+            _attachStateScriptButton.OnButtonPress(() => _attachStateScriptDialog.PopupCentered());
+            _resetStateScriptButton = _stateMachineGraph.GetNode<Button>("ResetStateScriptButton");
+            _resetStateScriptButton.OnButtonPress(ResetStateScript);
+            _attachStateScriptDialog = _stateMachineGraph.GetNode<FileDialog>("AttachStateScriptDialog");
+            _attachStateScriptDialog.OnFileSelected(AttachStateScript);
 
             _stateMachineGraph.OnNodeSelected(OnNodeSelected);
             _stateMachineGraph.OnNodeUnselected(OnNodeUnselected);
@@ -49,6 +57,16 @@ namespace Decembrist.State.UI.StateMachine
             _renameStateButton.Visible = false;
             _connectStateButton.Visible = false;
             if (_currentResource != null) _newStateButton.Visible = true;
+        }
+
+        private void ResetStateScript()
+        {
+            var stateName = _selectedBlocks[0].Name;
+            var stateResource = GetStateResource(stateName) ?? throw StateResourceNotFoundEx(stateName);
+            stateResource.Script = StateScript.ScriptPath;
+            
+            RefreshGraph();
+            UpdateStateButtons();
         }
 
         private void ShowNewStatePanel()
@@ -72,7 +90,7 @@ namespace Decembrist.State.UI.StateMachine
 
         private void SaveState(string? stateName)
         {
-            var state = new StateResource(stateName!);
+            var state = new StateResource(stateName!, StateScript.ScriptPath);
             _currentResource!.States.Add(state);
             RefreshGraph();
         }
@@ -98,8 +116,8 @@ namespace Decembrist.State.UI.StateMachine
             if (_currentResource == null) throw EmptyResourceEx();
 
             ClearStates();
-            var idleStateExists = GetStateResource(StateData.IdleStateName) != null;
-            if (!idleStateExists) throw new Exception($"No {StateData.IdleStateName} state found");
+            var idleStateExists = GetStateResource(StateScript.IdleStateName) != null;
+            if (!idleStateExists) throw new Exception($"No {StateScript.IdleStateName} state found");
 
             _stateBlocks = _currentResource.States
                 .Select(CreateStateBlock)
@@ -107,6 +125,7 @@ namespace Decembrist.State.UI.StateMachine
                 .ToDictionary(stateBlock => stateBlock.Name);
             _selectedBlocks.Clear();
             _stateMachineGraph.SetSelected(null);
+            DrawTransitionLines();
         }
 
         private void ClearStates()
@@ -128,7 +147,7 @@ namespace Decembrist.State.UI.StateMachine
         private void OnNodeUnselected(Node node)
         {
             _selectedBlocks.Remove((node as GraphNode)!);
-            OnChangeSelectedNode();
+            UpdateStateButtons();
         }
 
         private void OnNodeSelected(Node node)
@@ -138,20 +157,45 @@ namespace Decembrist.State.UI.StateMachine
                 .Where(block => block.Name != node.Name)
                 .ToList();
             _selectedBlocks.Add((node as GraphNode)!);
-            OnChangeSelectedNode();
-            // _selectedTransaction?.SetSelected(false);
-            // if (anySelected && node == null) return;
-
-            // _currentState = node != null ? _stateBlocks[node.Name] : null;
-            // _connectStateButton.Visible = node != null && _stateBlocks.Count > 1;
-            // _newStateButton.Visible = node == null;
+            UnselectTransition();
+            UpdateStateButtons();
         }
 
-        private void OnChangeSelectedNode()
+        private void UpdateStateButtons()
         {
-            _newStateButton.Visible = _selectedBlocks.Count == 0;
-            _renameStateButton.Visible = _selectedBlocks.Count == 1;
-            _connectStateButton.Visible = _selectedBlocks.Count == 2;
+            _newStateButton.Visible = _selectedBlocks.Count == 0 && _selectedTransaction == null;
+            _resetStateScriptButton.Visible = false;
+            _attachStateScriptButton.Visible = false;
+            var oneSelected = _selectedBlocks.Count == 1;
+            if (oneSelected)
+            {
+                _attachStateScriptButton.Visible = true;
+                var stateName = _selectedBlocks[0].Name;
+                var stateResource = GetStateResource(stateName) ?? throw StateResourceNotFoundEx(stateName);
+                _resetStateScriptButton.Visible = stateResource.Script != StateScript.ScriptPath;
+                _renameStateButton.Visible = stateName != StateScript.IdleStateName;
+            }
+
+            _connectStateButton.Visible = _selectedBlocks.Count == 2
+                                          && !StatesConnected(_selectedBlocks[0], _selectedBlocks[1]);
+            UpdateTransitionButtons();
+        }
+
+        private void AttachStateScript(string file)
+        {
+            if (!ResourceLoader.Exists(file)) throw new Exception($"Script {file} not found");
+
+            var resource = ResourceLoader.Load(file);
+            if (resource is not CSharpScript script) throw new Exception($"Script {file} is not c# script");
+
+            var state = script.New();
+            if (state is not StateScript) throw new Exception($"Script {file} is not {typeof(StateScript).FullName} class");
+
+            var stateName = _selectedBlocks[0].Name;
+            var stateResource = GetStateResource(stateName) ?? throw StateResourceNotFoundEx(stateName);
+
+            stateResource.Script = file;
+            RefreshGraph();
         }
 
         private void OnMoveStateBlock(GraphNode stateBlock)
@@ -163,7 +207,7 @@ namespace Decembrist.State.UI.StateMachine
 
             stateResource.Position = stateBlock.Offset;
         }
-        
+
         private Exception StateResourceNotFoundEx(string stateName) => new($"State resource {stateName} not found!");
     }
 }

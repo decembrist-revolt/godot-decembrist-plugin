@@ -28,7 +28,7 @@ namespace Decembrist.State.UI.StateMachine
         private List<StateMachineComponent> _stateMachines;
         private StateMachineResource? _currentResource;
 
-        public static StateMachine.StateMachineController WrapDock(
+        public static StateMachineController WrapDock(
             Control decembristDock,
             EditorPlugin plugin) => new(decembristDock, plugin);
 
@@ -38,7 +38,7 @@ namespace Decembrist.State.UI.StateMachine
             _stateMachineGraph = decembristDock.GetNode<GraphEdit>("TabContainer/StateMachine");
             // Dialogs
             _newMachineDialog = _stateMachineGraph.GetNode<FileDialog>("NewMachineDialog");
-            _newMachineDialog.OnFileSelected(LoadResource);
+            _newMachineDialog.OnFileSelected(NewResource);
             _loadMachineDialog = _stateMachineGraph.GetNode<FileDialog>("LoadMachineDialog");
             _loadMachineDialog.OnFileSelected(LoadResource);
             // Machine buttons
@@ -52,25 +52,34 @@ namespace Decembrist.State.UI.StateMachine
             _closeMachineButton.OnButtonPress(CloseResource);
             _refreshButton = _stateMachineGraph.GetNode<Button>("RefreshButton");
             _refreshButton.OnButtonPress(RefreshGraph);
-            _connectStateButton = _stateMachineGraph.GetNode<Button>("ConnectStateButton");
-            _connectStateButton.OnButtonPress(ConnectStates);
             // Info
             _noStateMachineLabel = _stateMachineGraph.GetNode<Label>("NoStateMachineLabel");
+            InitTransitionController();
             InitStateController();
+        }
+
+        private void NewResource(string file)
+        {
+            _currentResource = StateMachineResource.FromFile(file);
+            UpdateMachineButtons();
         }
 
         private void LoadResource(string file)
         {
-            var resource = ResourceLoader.Exists(file) ? ResourceLoader.Load(file) : new Resource {ResourcePath = file};
+            if (!ResourceLoader.Exists(file)) throw new Exception($"State machine {file} not found");
+            _currentResource = StateMachineResource.FromFile(file, false);
+            UpdateMachineButtons();
+        }
 
-            _currentResource = new StateMachineResource(resource);
+        private void UpdateMachineButtons()
+        {
             _saveMachineButton.Visible = true;
             _closeMachineButton.Visible = true;
             _newMachineButton.Visible = false;
             _openMachineButton.Visible = false;
             RefreshGraph();
         }
-        
+
         private void CloseResource()
         {
             _currentResource = null;
@@ -81,13 +90,15 @@ namespace Decembrist.State.UI.StateMachine
             _newStateButton.Visible = false;
             _renameStateButton.Visible = false;
             _connectStateButton.Visible = false;
+            _attachStateScriptButton.Visible = false;
+            _attachTransitionScriptButton.Visible = false;
             RefreshGraph();
         }
 
         private void SaveResource()
         {
             if (_currentResource == null) throw EmptyResourceEx();
-            
+
             _currentResource!.SaveResource();
         }
 
@@ -103,7 +114,6 @@ namespace Decembrist.State.UI.StateMachine
         {
             if (_currentResource != null)
             {
-                // _newStateButton.Visible = true;
                 _noStateMachineLabel.Visible = false;
                 _saveMachineButton.Visible = true;
                 _closeMachineButton.Visible = true;
@@ -121,6 +131,5 @@ namespace Decembrist.State.UI.StateMachine
         }
 
         private Exception EmptyResourceEx() => new("Empty state machine error");
-
     }
 }

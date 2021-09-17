@@ -26,8 +26,8 @@ namespace Decembrist
         {
             // var texture = GD.Load<Texture>("icon.png");
             AddCustomType(nameof(StateMachine), "Node", StateMachine.Script, null);
-            AddCustomType(nameof(State.State), "Node", State.State.Script, null);
-            AddCustomType(nameof(Transition), "Node", Transition.Script, null);
+            AddCustomType(nameof(StateScript), "Node", StateScript.Script, null);
+            AddCustomType(nameof(TransitionScript), "Node", TransitionScript.Script, null);
             SetUpDecembristDock();
         }
 
@@ -41,8 +41,8 @@ namespace Decembrist
         public override void _ExitTree()
         {
             RemoveCustomType(nameof(StateMachine));
-            RemoveCustomType(nameof(State.State));
-            RemoveCustomType(nameof(Transition));
+            RemoveCustomType(nameof(StateScript));
+            RemoveCustomType(nameof(TransitionScript));
         }
 
         private void CheckSetting(string name, object @default)

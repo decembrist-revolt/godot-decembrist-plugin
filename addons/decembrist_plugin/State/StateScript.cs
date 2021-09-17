@@ -5,16 +5,17 @@ using Godot;
 namespace Decembrist.State
 {
     [Tool]
-    public class State : Node
+    public class StateScript : Node
     {
         public const string IdleStateName = "Idle";
-
-        public static Script Script => GD.Load<Script>("res://addons/decembrist_plugin/State/State.cs");
+        public const string ScriptPath = "res://addons/decembrist_plugin/State/StateScript.cs";
+        
+        public static Script Script => GD.Load<Script>(ScriptPath);
         
         [Export]
         public Vector2 Position = Vector2.Zero;
 
-        public List<Transition> Transitions => this.GetChildren<Transition>();
+        public List<TransitionScript> Transitions => this.GetChildren<TransitionScript>();
 
         public virtual void OnEnter(Node sceneRoot)
         {

@@ -2,7 +2,6 @@ using System.Threading.Tasks;
 using Decembrist.Di;
 using Decembrist.State;
 using Godot;
-using StateData = Decembrist.State.State;
 
 namespace Decembrist.Example.StateMachineTest
 {
@@ -22,16 +21,16 @@ namespace Decembrist.Example.StateMachineTest
         public async Task Test()
         {
             Assertions.AssertEquals(
-                _stateMachine.CurrentState.Name, 
-                StateData.IdleStateName,
-                $"Start state is {StateData.IdleStateName}");
+                _stateMachine.CurrentScript.Name, 
+                StateScript.IdleStateName,
+                $"Start state is {StateScript.IdleStateName}");
             _stateMachine.Update();
             Assertions.AssertEquals(1, TestCounter, "Counter value == 1");
             _stateMachine.Update();
             Assertions.AssertEquals(
-                _stateMachine.CurrentState.Name, 
+                _stateMachine.CurrentScript.Name, 
                 State1Name,
-                $"Start state is {StateData.IdleStateName}");
+                $"Start state is {StateScript.IdleStateName}");
         }
     }
 }

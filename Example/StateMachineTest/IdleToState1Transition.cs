@@ -4,7 +4,7 @@ using Godot;
 
 namespace Decembrist.Example.StateMachineTest
 {
-    public class TransitionToState1 : Transition
+    public class IdleToState1Transition : TransitionScript
     {
         public override bool ShouldTransit(Node sceneRoot)
         {

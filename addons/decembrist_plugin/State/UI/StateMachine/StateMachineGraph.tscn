@@ -129,6 +129,58 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="AttachTransitionScriptButton" type="Button" parent="."]
+visible = false
+anchor_left = 0.702
+anchor_top = 0.062
+anchor_right = 0.824
+anchor_bottom = 0.117
+custom_fonts/font = SubResource( 2 )
+text = "Attach Script"
+expand_icon = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="AttachStateScriptButton" type="Button" parent="."]
+visible = false
+anchor_left = 0.702
+anchor_top = 0.062
+anchor_right = 0.824
+anchor_bottom = 0.117
+custom_fonts/font = SubResource( 2 )
+text = "Attach Script"
+expand_icon = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ResetStateScriptButton" type="Button" parent="."]
+visible = false
+anchor_left = 0.702
+anchor_top = 0.062
+anchor_right = 0.824
+anchor_bottom = 0.117
+custom_fonts/font = SubResource( 2 )
+text = "Reset Script"
+expand_icon = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="ResetTransitionScriptButton" type="Button" parent="."]
+visible = false
+anchor_left = 0.702
+anchor_top = 0.062
+anchor_right = 0.824
+anchor_bottom = 0.117
+custom_fonts/font = SubResource( 2 )
+text = "Reset Script"
+expand_icon = true
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="ConnectStateButton" type="Button" parent="."]
 visible = false
 anchor_left = 0.702
@@ -145,9 +197,9 @@ __meta__ = {
 [node name="RenameStateButton" type="Button" parent="."]
 visible = false
 anchor_left = 0.702
-anchor_top = 0.062
+anchor_top = 0.125
 anchor_right = 0.824
-anchor_bottom = 0.117
+anchor_bottom = 0.18
 custom_fonts/font = SubResource( 2 )
 text = "Rename State"
 expand_icon = true
@@ -226,3 +278,21 @@ margin_bottom = 309.809
 window_title = "Open a File"
 mode = 0
 filters = PoolStringArray( "*.tres" )
+
+[node name="AttachStateScriptDialog" type="FileDialog" parent="."]
+margin_left = 2.61963
+margin_top = -1.19055
+margin_right = 589.62
+margin_bottom = 309.809
+window_title = "Open a File"
+mode = 0
+filters = PoolStringArray( "*.cs" )
+
+[node name="AttachTransitionScriptDialog" type="FileDialog" parent="."]
+margin_left = 2.61963
+margin_top = -1.19055
+margin_right = 589.62
+margin_bottom = 309.809
+window_title = "Open a File"
+mode = 0
+filters = PoolStringArray( "*.cs" )

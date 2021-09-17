@@ -5,8 +5,6 @@ using System.Linq;
 using Godot;
 using Godot.Collections;
 using Array = Godot.Collections.Array;
-using TransitionData = Decembrist.State.Transition;
-using StateData = Decembrist.State.State;
 
 namespace Decembrist.State
 {
@@ -19,11 +17,10 @@ namespace Decembrist.State
         public readonly Resource Resource;
         public readonly List<StateResource> States;
 
-        public StateMachineResource(Resource stateMachineGd)
+        private StateMachineResource(Resource stateMachineGd)
         {
             Resource = stateMachineGd;
-            var value = stateMachineGd.Get(StateMachineDataProp)
-                        ?? new Dictionary {{StatesKey, CreateNewStates()}};
+            var value = stateMachineGd.Get(StateMachineDataProp);
             if (value is not Dictionary dictionary)
             {
                 throw new Exception($"{stateMachineGd.ResourcePath} has wrong format!");
@@ -40,15 +37,12 @@ namespace Decembrist.State
                 .ToList();
         }
 
-        public StateMachineResource(List<StateResource> states)
-        {
-            States = states;
-        }
-
         public void SaveResource()
         {
             Resource.Set(StateMachineDataProp, AsDictionary());
-            ResourceSaver.Save(Resource.ResourcePath, Resource);
+            GD.Print(Resource.ResourcePath);
+            ResourceSaver.Save(Resource.ResourcePath, Resource,
+                ResourceSaver.SaverFlags.ReplaceSubresourcePaths | ResourceSaver.SaverFlags.ChangePath);
             Resource.EmitChanged();
         }
 
@@ -60,11 +54,25 @@ namespace Decembrist.State
                 {StatesKey, new Array(states)}
             };
         }
-
-        private Array CreateNewStates() => new()
+        
+        public static StateMachineResource FromFile(string file, bool isNew = true)
         {
-            new StateResource(StateData.IdleStateName, StateData.Script.ResourcePath).AsDictionary()
-        };
+            Resource? stateMachineGd;
+            if (isNew)
+            {
+                stateMachineGd = ResourceLoader.Load<GDScript>(StateMachineResourceGd).New() as Resource;
+                var states = new Array
+                {
+                    new StateResource(StateScript.IdleStateName, StateScript.ScriptPath).AsDictionary()
+                };
+                stateMachineGd!.Set(StateMachineDataProp, new Dictionary {{StatesKey, states}});
+                stateMachineGd!.ResourcePath = file;
+            }
+
+            stateMachineGd = ResourceLoader.Load<Resource>(file);
+            var data = stateMachineGd.Get(StateMachineDataProp);
+            return data is Dictionary ? new StateMachineResource(stateMachineGd) : FromFile(file);
+        }
     }
 
     public class StateResource
@@ -110,7 +118,7 @@ namespace Decembrist.State
             IEnumerable<TransitionResource>? transitions = null)
         {
             Name = name;
-            Script = script ?? StateData.Script.ResourcePath;
+            Script = script ?? StateScript.ScriptPath;
             Position = position ?? Vector2.Zero;
             Transitions = (transitions ?? Enumerable.Empty<TransitionResource>()).ToList();
         }
@@ -132,19 +140,19 @@ namespace Decembrist.State
     {
         private const string TargetKey = "target";
         private const string ScriptKey = "script";
-        
+
         public readonly string Target;
-        public readonly string? Script;
+        public string? Script;
 
         public TransitionResource(Dictionary transition)
         {
-            if (transition[TargetKey] is not string target || transition[ScriptKey] is not string script)
+            if (transition[TargetKey] is not string target)
             {
                 throw new Exception($"Transition {JSON.Print(transition)} has wrong format!");
             }
-            
+
             Target = target;
-            Script = script;
+            Script = transition.Contains(ScriptKey) ? transition[ScriptKey] as string : null;
         }
 
         public TransitionResource(string target, string? script = null)
