@@ -6,7 +6,7 @@ namespace Decembrist.Example
 {
     public static class Assertions
     {
-        public static void AssertTrue(bool expression, string test)
+        public static void AssertTrue(bool expression, string test = "true assertion failed")
         {
             if (expression)
             {
@@ -32,6 +32,11 @@ namespace Decembrist.Example
                 GD.PrintErr(message);
                 throw new Exception(message);
             }
+        }
+
+        public static void AssertEquals(object? expected, object? actual, string test = "equals assertion failed")
+        {
+            AssertTrue(expected == actual, test);
         }
     }
 }

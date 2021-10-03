@@ -1,28 +1,41 @@
 #if TOOLS
+
 using Godot;
 
-[Tool]
-public class DecembristPlugin : EditorPlugin
+namespace Decembrist
 {
-    public override void EnablePlugin()
+    [Tool]
+    public class DecembristPlugin : EditorPlugin
     {
-        AddAutoloadSingleton("DecembristAutoload", "res://addons/decembrist_plugin/Autoload/DecembristAutoload.cs");
-        CheckSetting(DecembristSettings.ConfigClass, "DecembristConfiguration");
-        CheckSetting(DecembristSettings.EventBusEnabled, true);
-        CheckSetting(DecembristSettings.LanEventsEnabled, false);
-    }
-
-    public override void DisablePlugin()
-    {
-        RemoveAutoloadSingleton("DecembristAutoload");
-    }
-
-    private void CheckSetting(string name, object @default)
-    {
-        var setting = ProjectSettings.GetSetting(name);
-        if (setting == null)
+        public override void EnablePlugin()
         {
-            ProjectSettings.SetSetting(name, @default);
+            AddAutoloadSingleton("DecembristAutoload", "res://addons/decembrist_plugin/Autoload/DecembristAutoload.cs");
+            CheckSetting(DecembristSettings.ConfigClass, "DecembristConfiguration");
+            CheckSetting(DecembristSettings.EventBusEnabled, true);
+            CheckSetting(DecembristSettings.LanEventsEnabled, false);
+            CheckSetting(DecembristSettings.LanEventsEnabled, false);
+        }
+
+        public override void _EnterTree()
+        {
+        }
+
+        public override void DisablePlugin()
+        {
+            RemoveAutoloadSingleton("DecembristAutoload");
+        }
+
+        public override void _ExitTree()
+        {
+        }
+
+        private void CheckSetting(string name, object @default)
+        {
+            var setting = ProjectSettings.GetSetting(name);
+            if (setting == null)
+            {
+                ProjectSettings.SetSetting(name, @default);
+            }
         }
     }
 }
