@@ -1,8 +1,5 @@
 #if TOOLS
-using System.Collections.Generic;
-using Decembrist.Dock;
-using Decembrist.State;
-using Decembrist.State.UI.StateMachine;
+
 using Godot;
 
 namespace Decembrist
@@ -10,9 +7,6 @@ namespace Decembrist
     [Tool]
     public class DecembristPlugin : EditorPlugin
     {
-        private Control _decembristDock;
-        private List<IDockWrapper> _wrappers = new();
-    
         public override void EnablePlugin()
         {
             AddAutoloadSingleton("DecembristAutoload", "res://addons/decembrist_plugin/Autoload/DecembristAutoload.cs");
@@ -24,25 +18,15 @@ namespace Decembrist
 
         public override void _EnterTree()
         {
-            // var texture = GD.Load<Texture>("icon.png");
-            AddCustomType(nameof(StateMachine), "Node", StateMachine.Script, null);
-            AddCustomType(nameof(StateScript), "Node", StateScript.Script, null);
-            AddCustomType(nameof(TransitionScript), "Node", TransitionScript.Script, null);
-            SetUpDecembristDock();
         }
 
         public override void DisablePlugin()
         {
             RemoveAutoloadSingleton("DecembristAutoload");
-            RemoveControlFromBottomPanel(_decembristDock);
-            _wrappers.ForEach(wrapper => wrapper.Destructor());
         }
 
         public override void _ExitTree()
         {
-            RemoveCustomType(nameof(StateMachine));
-            RemoveCustomType(nameof(StateScript));
-            RemoveCustomType(nameof(TransitionScript));
         }
 
         private void CheckSetting(string name, object @default)
@@ -52,13 +36,6 @@ namespace Decembrist
             {
                 ProjectSettings.SetSetting(name, @default);
             }
-        }
-
-        private void SetUpDecembristDock()
-        {
-            _decembristDock = DecembristDock.Instance(GetEditorInterface());
-            _wrappers.Add(StateMachineController.WrapDock(_decembristDock, this));
-            AddControlToBottomPanel(_decembristDock, "Decembrist");
         }
     }
 }
